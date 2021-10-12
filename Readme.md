@@ -35,4 +35,4 @@ curl http://localhost:8888
 
 ## Branches
 
-You're actually on **master** branch. Checkout other branches for more examples of Vert.x
+You're actually on **router** branch. Checkout other branches for more examples of Vert.x
