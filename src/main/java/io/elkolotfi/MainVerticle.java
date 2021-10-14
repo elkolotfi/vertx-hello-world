@@ -8,6 +8,8 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public void start() {
+        vertx.deployVerticle(new HelloVerticle());
+
         Router router = Router.router(vertx);
 
         router.get("/").handler(this::helloVertx);
@@ -20,12 +22,19 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void helloVertx(RoutingContext context) {
-        context.request().response().end("Hello Vert.x!");
+        vertx.eventBus().request("hello.vertx.addr", null, reply -> {
+            String response = (String) reply.result().body();
+            context.request().response().end(response);
+        });
     }
 
     private void helloName(RoutingContext context) {
         String name = context.pathParam("name");
-        context.request().response().end(String.format("Hello %s!", name));
+        vertx.eventBus().request("hello.named.addr", name, reply -> {
+            String response = (String) reply.result().body();
+            context.request().response().end(response);
+        });
+
     }
 
 }
