@@ -5,7 +5,7 @@ import io.vertx.core.AbstractVerticle;
 public class HelloVerticle extends AbstractVerticle {
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         vertx.eventBus().consumer("hello.vertx.addr", msg -> {
             msg.reply("Hello Vertx!!");
         });

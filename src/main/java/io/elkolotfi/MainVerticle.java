@@ -1,5 +1,6 @@
 package io.elkolotfi;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -8,11 +9,13 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.StaticHandler;
 
 import java.util.UUID;
 
 public class MainVerticle extends AbstractVerticle {
     private static final String VERTICLE_ID = UUID.randomUUID().toString();
+    private static final String AUTH_TOKEN = "AUTH_TOKEN";
 
     @Override
     public void start(Promise start) {
@@ -20,9 +23,23 @@ public class MainVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
 
-        router.get("/").handler(this::helloVertx);
+        router.route().handler(context -> {
+           String token = context.request().getHeader(AUTH_TOKEN);
+           if (token != null && "secretToken".contentEquals(token)) {
+               context.next();
+           }
+           else {
+               context.response()
+                       .setStatusCode(HttpResponseStatus.UNAUTHORIZED.code())
+                       .setStatusMessage("UNAUTHORIZED")
+                       .end();
+           }
+        });
 
-        router.get("/:name").handler(this::helloName);
+        router.get("/api").handler(this::helloVertx);
+        router.get("/api/:name").handler(this::helloName);
+
+        router.route().handler(StaticHandler.create("web"));
 
         handleConfig(start, router);
     }
@@ -41,7 +58,9 @@ public class MainVerticle extends AbstractVerticle {
 
         retriever.getConfig()
                 .onSuccess(config ->  {
-                   vertx.createHttpServer().requestHandler(router).listen(config.getJsonObject("http").getInteger("port"));
+                    Integer port = config.getJsonObject("http").getInteger("port");
+                    vertx.createHttpServer().requestHandler(router).listen(port);
+                    System.out.println(String.format("successfully deployed on port %d", port));
                    start.complete();
                 })
                 .onFailure(msg -> start.fail(msg.getMessage()));
