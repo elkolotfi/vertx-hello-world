@@ -20,6 +20,14 @@ To build and run the application, you can simply type:
 mvn clean package vertx:run
 ```
 
+To run in cluster mode, do:
+
+```bash
+java -jar target/hello-1.0-SNAPSHOT.jar -cluster -Djava.net.prefereIPv4Stack=true -Dhttp.port=<your_port_number>
+```
+
+you can run this command as much as you want (with changing http port every time).
+
 vert.x is now up and running, no need for restart, just edit and save your files and the server will detect those changes.
 
 ## Test it
@@ -35,4 +43,4 @@ curl http://localhost:8888
 
 ## Branches
 
-You're actually on **router** branch. Checkout other branches for more examples of Vert.x
+You're actually on **cluster** branch. Checkout other branches for more examples of Vert.x
