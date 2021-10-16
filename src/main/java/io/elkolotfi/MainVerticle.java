@@ -1,6 +1,11 @@
 package io.elkolotfi;
 
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
@@ -10,7 +15,7 @@ public class MainVerticle extends AbstractVerticle {
     private static final String VERTICLE_ID = UUID.randomUUID().toString();
 
     @Override
-    public void start() {
+    public void start(Promise start) {
         vertx.deployVerticle(new HelloVerticle());
 
         Router router = Router.router(vertx);
@@ -19,16 +24,27 @@ public class MainVerticle extends AbstractVerticle {
 
         router.get("/:name").handler(this::helloName);
 
-        int httpPort = 8080;
-        try {
-            httpPort = Integer.parseInt(System.getProperty("http.port", String.valueOf(httpPort)));
-        } catch (NumberFormatException e) {
-            System.out.println(e.getMessage());
-        }
+        handleConfig(start, router);
+    }
 
-        vertx.createHttpServer()
-                .requestHandler(router)
-                .listen(httpPort);
+    private void handleConfig(Promise start, Router router) {
+
+        ConfigStoreOptions defaultConfig = new ConfigStoreOptions()
+                .setType("file")
+                .setFormat("json")
+                .setConfig(new JsonObject().put("path", "config.json"));
+
+        ConfigRetrieverOptions retrieverOptions = new ConfigRetrieverOptions()
+                .addStore(defaultConfig);
+
+        ConfigRetriever retriever = ConfigRetriever.create(vertx, retrieverOptions);
+
+        retriever.getConfig()
+                .onSuccess(config ->  {
+                   vertx.createHttpServer().requestHandler(router).listen(config.getJsonObject("http").getInteger("port"));
+                   start.complete();
+                })
+                .onFailure(msg -> start.fail(msg.getMessage()));
     }
 
     private void helloVertx(RoutingContext context) {

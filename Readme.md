@@ -43,4 +43,4 @@ curl http://localhost:8888
 
 ## Branches
 
-You're actually on **cluster** branch. Checkout other branches for more examples of Vert.x
+You're actually on **config** branch. Checkout other branches for more examples of Vert.x

@@ -30,6 +30,7 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
@@ -38,6 +39,11 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-infinispan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-config</artifactId>
         </dependency>
     </dependencies>
     <build>
